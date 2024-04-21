@@ -1,0 +1,138 @@
+import random  # Importing the random module for generating random numbers
+
+# Function to check if a number is prime
+def is_prime(number):
+    if number < 2:  # If the number is less than 2, it's not prime
+        return False
+    # Checking divisibility from 2 to number-1
+    for i in range(2, number):
+        if number % i == 0:  # If the number is divisible by any number in this range, it's not prime
+            return False
+    return True  # If no factors were found, the number is prime
+
+# Function to find greatest common divisor (GCD) of two numbers
+def gcd(a, b):
+    # Euclidean algorithm
+    while b != 0:  # Repeat until b becomes 0
+        a, b = b, a % b  # Swap a and b, and set b to the remainder of a divided by b
+    return a  # Return the final value of a, which is the GCD
+
+# Function to find the modular inverse
+def mod_inverse(e, phi):
+    d = 3  # Initializing d to 3
+    # Increment d until we find the modular inverse
+    while (d * e) % phi != 1:  # Continue until (d * e) % phi equals 1
+        d += 1  # Increment d
+        if d >= phi:  # If d exceeds phi, there is no modular inverse
+            raise ValueError("mod_inverse doesn't exist")
+    return d  # Return the modular inverse
+
+# Function to generate prime numbers within a range
+def generate_prime(min_value, max_value):
+    prime = random.randint(min_value, max_value)  # Generate a random number in the specified range
+    # Keep generating until a prime number is found
+    while not is_prime(prime):  # Repeat until the generated number is prime
+        prime = random.randint(min_value, max_value)  # Generate another random number
+    return prime  # Return the prime number
+
+# Function encapsulating Rohan's actions
+def rohan():
+    print("Rohan is the sender:")
+    print("")
+
+    # Step 1: Generate two random prime numbers
+    print("Step 1: Generating prime numbers...")
+    p = generate_prime(1000, 5000)  # Generate a prime number between 1000 and 5000
+    q = generate_prime(1000, 5000)  # Generate another prime number between 1000 and 5000
+    print(f"   Prime number P: {p}")  # Print the generated prime number P
+    print(f"   Prime number Q: {q}")  # Print the generated prime number Q
+    # Make sure p and q are not the same
+    while p == q:  # If p is equal to q, generate q again until it's different from p
+        q = generate_prime(1000, 5000)  # Generate a new q
+    # Step 2: Calculate n = p * q
+    print("\nStep 2: Calculating n = p * q...")
+    n = p * q  # Calculate n by multiplying p and q
+    print(f"   n = {p} * {q} = {n}")  # Print the calculated n
+
+    # Step 3: Calculate Euler's totient function
+    print("\nStep 3: Calculating Euler's totient function...")
+    phi_n = (p - 1) * (q - 1)  # Calculate Euler's totient function for n
+    print(f"   Phi(n) = (P-1) * (Q-1) = {phi_n}")  # Print the calculated Euler's totient function
+
+    # Step 4: Generate a public key e for encryption
+    print("\nStep 4: Generating a public key (e) for encryption...")
+    e = random.randint(3, phi_n - 1)  # Generate a random e in the range (3, phi_n - 1)
+    # Make sure e and phi_n are coprime
+    while gcd(e, phi_n) != 1:  # Repeat until e and phi_n are coprime
+        e = random.randint(3, phi_n - 1)  # Generate another random e
+    print(f"   Public key (e): {e}")  # Print the generated public key e
+
+    # Step 5: Generate the private key
+    print("\nStep 5: Generating the private key (d)...")
+    d = mod_inverse(e, phi_n)  # Calculate the modular inverse of e modulo phi_n
+    print(f"   Private key (d): {d}")  # Print the generated private key d
+
+    # Neha is the receiver:
+    print("\nNeha is the receiver:")
+    print("")
+
+    # Neha's public key
+    public_key_neha = (e, n)  # Set Neha's public key as a tuple (e, n)
+
+    # Function to send email
+    def send_email(sender, receiver, message, public_key):
+        print(f"\n{sender} sends an email to {receiver}:")
+        print(f"   Subject: Message from {sender}")
+        print(f"   Message: {message}")
+        print("")
+
+        e, n = public_key  # Unpack Neha's public key
+        # Encoding the message as numbers
+        message_encoded = [ord(ch) for ch in message]  # Convert each character in the message to its Unicode code point
+        print(f"   Step 6: Converting the message '{message}' into Unicode:")
+        print("   Unicode Representation:", message_encoded)  # Print the Unicode representation of the message
+        # Encryption: C = (M^e) % n
+        ciphertext = [pow(ch, e, n) for ch in message_encoded]  # Encrypt each Unicode code point
+        print("\n   Step 7: Encrypting the message using public key (e)...")
+        print("   Cipher Text:", ciphertext)  # Print the ciphertext
+        return ciphertext  # Return the encrypted message
+
+    # Function to receive email
+    def receive_email(ciphertext, d, n):
+        # Decrypting the message
+        print("\nNeha receives the email and decrypts it:")
+        message_encoded = [pow(ch, d, n) for ch in ciphertext]  # Decrypt each encrypted code point
+        print("\n   Step 8: Decrypting the message using private key (d)...")
+        print("   Decrypted Unicode Representation:", message_encoded)  # Print the decrypted Unicode representation
+        # Converting the decrypted numbers back to characters
+        decrypted_message = "".join(chr(ch) for ch in message_encoded)  # Convert each Unicode code point to character
+        print("\n   Step 9: Converting the decrypted Unicode back to characters:")
+        print("   Decrypted Message:", decrypted_message)  # Print the decrypted message
+        return decrypted_message  # Return the decrypted message
+
+    # Rohan sends email to Neha
+    sender = "Rohan"
+    receiver = "Neha"
+    message = "Hey Neha!"
+    print(f"\n{sender} sends an email to {receiver}:")
+    print(f"   Subject: Message from {sender}")
+    print(f"   Message: {message}")
+    print("")
+
+    ciphertext = send_email(sender, receiver, message, public_key_neha)  # Send the encrypted message to Neha
+
+    # Neha receives and decrypts the email
+    decrypted_message = receive_email(ciphertext, d, n)  # Receive and decrypt the message
+    print(f"\n{receiver} receives and decrypts the email:")
+    print(f"   Decrypted message from {sender}: {decrypted_message}")
+
+    print("")
+    print("Rohan's P:", p)
+    print("Rohan's Q:", q)
+    print("Rohan's n:", n)
+    print("Rohan's phi(n):", phi_n)
+    print("Rohan's public key:", e)
+    print("Rohan's private key:", d)
+
+# Call the function to initiate the RSA communication process
+rohan()
