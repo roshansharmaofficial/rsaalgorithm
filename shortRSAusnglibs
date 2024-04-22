@@ -1,0 +1,33 @@
+# Import necessary modules and classes
+from cryptography.hazmat.primitives import serialization, hashes  # For serialization and hash functions
+from cryptography.hazmat.primitives.asymmetric import rsa, padding  # For RSA encryption and padding
+
+# Generate RSA key pair
+private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)  # Generate a private key
+public_key = private_key.public_key()  # Extract the corresponding public key
+
+# Encrypt a message
+message = b"Hey Neha!"  # Message to be encrypted (in bytes)
+ciphertext = public_key.encrypt(  # Encrypt the message using the public key
+    message,
+    padding.OAEP(  # Use Optimal Asymmetric Encryption Padding (OAEP)
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),  # Mask Generation Function (MGF1) with SHA-256
+        algorithm=hashes.SHA256(),  # Hash algorithm (SHA-256)
+        label=None  # No additional label
+    )
+)
+
+# Decrypt the message
+decrypted_message = private_key.decrypt(  # Decrypt the ciphertext using the private key
+    ciphertext,
+    padding.OAEP(  # Use the same OAEP padding
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),  # MGF1 with SHA-256
+        algorithm=hashes.SHA256(),  # SHA-256
+        label=None  # No additional label
+    )
+)
+
+# Print the results
+print("Original Message:", message)  # Print the original message
+print("Encrypted Message:", ciphertext)  # Print the encrypted message
+print("Decrypted Message:", decrypted_message)  # Print the decrypted message
